@@ -1,46 +1,69 @@
 let express = require('express');
-let options = require('./options');
+let apiOptions = require('./apiOptions');
 let UserService = require('./services/user.service');
 let ImageService = require('./services/image.service');
+let WallService = require('./services/wall.service');
 
-const vkapi = new (require('node-vkapi'))(options);
+let Rx = require('rxjs/Rx');
+
+const vkApiApp = new (require('node-vkapi'))(apiOptions);
+const vkApiLoggined = new (require('node-vkapi'))(apiOptions);
 
 let app = express();
 let fs = require('fs');
 
-let userService = new UserService(vkapi);
-let imageService = new ImageService(vkapi);
-
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min)) + min;
-}
-
-function getResultIndexList(array, exeptions) {
-  return array.filter(f => !exeptions.includes(f));
-}
+let userService = new UserService(vkApiApp);
+let imageService = new ImageService(vkApiApp);
+let wallService = new WallService(vkApiLoggined);
 
 app.use("/covers", express.static('covers'));
 
 var port = process.env.PORT || 4200;
 
-app.listen(port, run);
+authorizedParams = {
+  login: vkApiLoggined.options.userLogin,
+  password: vkApiLoggined.options.userPassword,
+}
 
-// function serve() {
-//   setInterval(run, 3600);
-// }
+vkApiLoggined.authorize(authorizedParams).then((response) => {
+  app.listen(port, serve);
+}).catch((e) => {
+  console.log(`error ${e}`);
+});
 
-function run() {
-  userService.getMembersOfGroupWithId(76660997).then((res) => {
-    let items = getResultIndexList(res.items, [55063113, 217276010, 279551906, 99651108, 60833780, 126356305, 27077007]);
-    idNum = getRandomInt(0, items.length - 1);
-    return items[idNum];
-  }).then((id)=> {
-    userService.getById(id)
-    .then((user) => {
-      userService.fetchPhoto(user.photo_100)
-      .then(ph => {
-        imageService.makeCover({photo: ph, top: 0, left: 200, text: " =>> "})
-      })
-    })
+function serve() {
+  console.log(new Date());
+  swapCover();
+
+  Rx.Observable
+  .interval(60 * 1000 * 5)
+  .subscribe(()=>{
+    swapCover();
   })
 }
+
+function swapCover() {
+  let photo = null;
+  let ownerId = "-36039";
+  let postId = "3473494";
+
+  wallService.getAllComments(ownerId, postId)
+  .switchMap((fetchedComments) => {
+    let winnerPlayerId = wallService.getWinnerPlayerByCommentCount(fetchedComments);
+    return Rx.Observable.of(winnerPlayerId);
+  })
+  .switchMap(id => {
+    return userService.getUserById(id);
+  })
+  .switchMap((user) => {
+    return userService.fetchUserPhoto(user.photo_100);
+  })
+  .switchMap((ph) => {
+    photo = ph;
+    return imageService.readInputCover();
+  })
+  .subscribe((inputCoverImage) => {
+    imageService.makeCover(inputCoverImage, {photo: photo, top: 0, left: 200, text: "hello world"})
+ })
+}
+

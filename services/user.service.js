@@ -1,40 +1,47 @@
 var fetch = require('node-fetch');
-let Canvas = require('canvas')
-let Image = Canvas.Image
+let Canvas = require('canvas');
+let Image = Canvas.Image;
+var Observable = require('rxjs/Observable').Observable;
+require('rxjs/add/operator/map');
 
 class UserService {
 
   constructor(api) {
     this.vkapi = api;
-    this.targetUser = null;
   }
 
   getMembersOfGroupWithId(id) {
-    return this.vkapi.call('groups.getMembers', {
-      group_id: id,
-    })
+    return Observable.fromPromise(
+      this.vkapi.call('groups.getMembers', {
+        group_id: id,
+      })
+    )
   }
 
-  getById(id) {
-    return this.vkapi.call('users.get', {
-      user_ids: id,
-      fields: "photo_100",
-    })
-    .then(users => {
-      this.targetUser = users[0] || null;
-      return users[0];
-    });
+  getUserById(id) {
+    return Observable.fromPromise(
+      this.vkapi.call('users.get', {
+        user_ids: id,
+        fields: "photo_100",
+      })
+    ).map(users => users[0]);
   }
 
-  fetchPhoto(url) {
-    return fetch(url)
-      .then(function(res) {
+  fetchUserPhoto(url) {
+    return Observable.fromPromise(
+      fetch(url)
+      .then((res) => {
         return res.buffer();
-      }).then(function(buffer) {
+      })
+      .then((buffer) => {
         let img = new Image;
         img.src = buffer;
         return img;
-      });
+      })
+      .catch((e) => {
+        console.log(`error ${e}`);
+      })
+    )
   }
 }
 

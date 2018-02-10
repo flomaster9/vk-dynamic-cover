@@ -1,7 +1,7 @@
 const coverOptions = {
   groupId: 76660997,
   inputCoverName: "input.jpeg",
-  outputCoverName: "output.jpg",
+  outputCoverName: "output",
   saveResult: false,
 }
 
