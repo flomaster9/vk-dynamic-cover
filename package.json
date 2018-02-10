@@ -1,0 +1,20 @@
+{
+  "name": "vk-dynamic-cover",
+  "version": "1.0.0",
+  "description": "nodejs dynamic cover for vk groups",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^1.6.9",
+    "canvas-to-buffer": "^1.0.11",
+    "express": "^4.16.2",
+    "node-fetch": "^2.0.0",
+    "node-vkapi": "^3.0.6",
+    "rxjs": "^5.5.6"
+  }
+}
