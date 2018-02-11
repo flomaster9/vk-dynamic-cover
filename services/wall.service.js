@@ -43,7 +43,7 @@ class WallService {
         winnerId = p;
       }
     }
-    console.log(`for last 5 minutes winner is ${winnerId} with ${players[winnerId]} comments`)
+    console.log(`for last 5 minutes winner is vk.com/id${winnerId} with ${players[winnerId]} comments`)
     return winnerId;
   }
 
@@ -64,7 +64,7 @@ class WallService {
       if (this.commentCount > this.lastOffset) {
         return this._getCommentsChunk(ownerId, postId, fetchedComments);
       } else {
-        console.log(`get ${fetchedComments.length} comments from ${this.commentCount}`);
+        console.log(`get last ${fetchedComments.length} comments from ${this.commentCount}`);
         return fetchedComments;
       }
     })

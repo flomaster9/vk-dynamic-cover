@@ -1,5 +1,5 @@
 let fs = require('fs');
-let coverOptions = require('../coverOptions');
+let options = require('../options');
 let Frame  = require('canvas-to-buffer')
 
 let Canvas = require('canvas')
@@ -22,7 +22,7 @@ class ImageService {
       content: image,
       name: 'image.png' 
     }, {
-      group_id: coverOptions.groupId,
+      group_id: options.groupId,
       crop_x2: 1590,
       crop_y2: 400 
     })
@@ -35,7 +35,7 @@ class ImageService {
   }
 
   _saveImageToDisk(canvas){
-    let out = fs.createWriteStream(`${__dirname}/../covers/${coverOptions.outputCoverName}__${getTimestamp()}.jpg`)
+    let out = fs.createWriteStream(`${__dirname}/../covers/${options.outputCoverName}__${getTimestamp()}.jpg`)
     let stream = canvas.pngStream();
 
     stream.on('data', function(chunk){
@@ -61,7 +61,7 @@ class ImageService {
     let bufferedFrame = frame.toBuffer();
     this._saveImageToServer(bufferedFrame)
 
-    if (coverOptions.saveResult) {
+    if (options.saveResult) {
       this._saveImageToDisk(canvas);
     }
   }
@@ -74,7 +74,7 @@ class ImageService {
   }
 
   readInputCover() {
-    let image = fs.readFileSync(`${__dirname}/../covers/${coverOptions.inputCoverName}`);
+    let image = fs.readFileSync(`${__dirname}/../covers/${options.inputCoverName}`);
     let coverInputImage = new Image;
     coverInputImage.src = image;
     return Rx.Observable.of(coverInputImage);
